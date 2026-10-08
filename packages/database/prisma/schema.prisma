@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  name              String
+  avatarUrl         String?
+  preferredLanguage String    @default("en")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  children          Child[]
+}
+
+model Child {
+  id                String           @id @default(uuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  dateOfBirth       DateTime
+  gender            String?
+  preferredLanguage String           @default("en")
+  interests         String[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  dailyPlans        DailyPlan[]
+  progress          SkillProgress[]
+  activityHistory   ActivityHistory[]
+}
+
+model AgeGroup {
+  id             String @id @default(uuid())
+  name           String @unique
+  minAgeMonths   Int
+  maxAgeMonths   Int
+  description    String?
+}
+
+model Domain {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  skills      Skill[]
+}
+
+model Skill {
+  id          String           @id @default(uuid())
+  domainId    String
+  domain      Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String           @unique
+  description String?
+  activities  ActivitySkill[]
+  stories     StorySkill[]
+  progress    SkillProgress[]
+}
+
+model Value {
+  id         String         @id @default(uuid())
+  name       String         @unique
+  slug       String         @unique
+  description String?
+  activities ActivityValue[]
+  stories    StoryValue[]
+}
+
+model Activity {
+  id                 String            @id @default(uuid())
+  title              String
+  ageRange           String
+  durationMinutes    Int
+  difficulty         String            @default("easy")
+  status             String            @default("draft")
+  parentInstructions String
+  childInstructions  String
+  materials          String[]
+  indoorOutdoor      String            @default("indoor")
+  safetyNotes        String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  skills             ActivitySkill[]
+  values             ActivityValue[]
+  dailyPlanItems     DailyPlanItem[]
+  history            ActivityHistory[]
+}
+
+model ActivitySkill {
+  activityId String
+  skillId    String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  skill      Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, skillId])
+}
+
+model ActivityValue {
+  activityId String
+  valueId    String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  value      Value    @relation(fields: [valueId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, valueId])
+}
+
+model Story {
+  id          String        @id @default(uuid())
+  title       String
+  ageRange    String
+  language    String        @default("en")
+  summary     String
+  content     String
+  moral       String
+  status      String        @default("draft")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  skills      StorySkill[]
+  values      StoryValue[]
+}
+
+model StorySkill {
+  storyId String
+  skillId String
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, skillId])
+}
+
+model StoryValue {
+  storyId String
+  valueId String
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  value   Value  @relation(fields: [valueId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, valueId])
+}
+
+model VocabularyItem {
+  id              String   @id @default(uuid())
+  english         String
+  telugu          String
+  category        String
+  meaning         String
+  pronunciation   String?
+  status          String   @default("draft")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Question {
+  id          String   @id @default(uuid())
+  text        String
+  contextType String   @default("story")
+  contextId   String
+  createdAt   DateTime @default(now())
+}
+
+model Source {
+  id        String   @id @default(uuid())
+  title     String
+  type      String
+  url       String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model DailyPlan {
+  id        String          @id @default(uuid())
+  childId   String
+  child     Child           @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date      DateTime
+  createdAt DateTime        @default(now())
+  items     DailyPlanItem[]
+}
+
+model DailyPlanItem {
+  id          String   @id @default(uuid())
+  dailyPlanId String
+  dailyPlan   DailyPlan @relation(fields: [dailyPlanId], references: [id], onDelete: Cascade)
+  activityId  String
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  type        String   @default("activity")
+  order       Int
+}
+
+model SkillProgress {
+  id             String    @id @default(uuid())
+  childId        String
+  child          Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  skillId        String
+  skill          Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  level          Int       @default(0)
+  lastPracticedAt DateTime?
+
+  @@unique([childId, skillId])
+}
+
+model ActivityHistory {
+  id         String   @id @default(uuid())
+  childId    String
+  child      Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  feedback   String?
+}
