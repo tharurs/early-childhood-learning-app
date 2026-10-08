@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ec-learning/*": ["packages/*/src/index.ts"],
+      "@ec-learning/database": ["packages/database/src/index.ts"],
+      "@ec-learning/types": ["packages/types/src/index.ts"],
+      "@ec-learning/validation": ["packages/validation/src/index.ts"],
+      "@ec-learning/ui": ["packages/ui/src/index.ts"],
+      "@ec-learning/content": ["packages/content/src/index.ts"],
+      "@ec-learning/config": ["packages/config/src/index.ts"]
+    }
+  }
+}
